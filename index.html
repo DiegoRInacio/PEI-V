@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git - Comandos Essenciais</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow: hidden;
+        }
+
+        .presentation {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            width: 90%;
+            max-width: 1000px;
+            height: 80%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 60px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #ffd93d;
+        }
+
+        .git-logo {
+            font-size: 8em;
+            margin: 20px 0;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+        }
+
+        .command-box {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            border-left: 5px solid #4ecdc4;
+            text-align: left;
+        }
+
+        .command {
+            color: #4ecdc4;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #ccc;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .workflow-step {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(78, 205, 196, 0.2));
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .workflow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            line-height: 40px;
+            text-align: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1em;
+            backdrop-filter: blur(10px);
+        }
+
+        .important {
+            color: #ffd93d;
+            font-weight: bold;
+        }
+
+        .danger {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        ul {
+            text-align: left;
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1em;
+        }
+
+        li::before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .git-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 30px 0;
+        }
+
+        .flow-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin: 0 10px;
+            flex: 1;
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: #ffd93d;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px;
+                width: 95%;
+            }
+            
+            h1 { font-size: 2.5em; }
+            h2 { font-size: 2em; }
+            .git-logo { font-size: 5em; }
+            
+            .nav-btn {
+                padding: 12px 20px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- Slide 1: Título -->
+        <div class="slide active">
+            <div class="git-logo">🌿</div>
+            <h1>Git</h1>
+            <h2>Comandos Essenciais</h2>
+            <p style="font-size: 1.2em; margin-top: 30px; opacity: 0.9;">
+                Controle de versão distribuído para desenvolvedores
+            </p>
+        </div>
+
+        <!-- Slide 2: O que é Git -->
+        <div class="slide">
+            <h2>O que é Git? 🤔</h2>
+            <ul>
+                <li>Sistema de <span class="success">controle de versão</span> distribuído</li>
+                <li>Criado por <span class="important">Linus Torvalds</span> em 2005</li>
+                <li>Rastreia <span class="success">mudanças</span> nos arquivos</li>
+                <li>Permite <span class="success">colaboração</span> em equipe</li>
+                <li>Mantém <span class="important">histórico completo</span> do projeto</li>
+                <li>Funciona <span class="success">offline</span></li>
+            </ul>
+        </div>
+
+        <!-- Slide 3: Configuração Inicial -->
+        <div class="slide">
+            <h2>Configuração Inicial ⚙️</h2>
+            <div class="command-box">
+                <div class="command">git config --global user.name "Seu Nome"</div>
+                <div class="description">Define seu nome para commits</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git config --global user.email "seu@email.com"</div>
+                <div class="description">Define seu email para commits</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git config --list</div>
+                <div class="description">Mostra todas as configurações</div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Iniciando um Repositório -->
+        <div class="slide">
+            <h2>Iniciando um Repositório 🚀</h2>
+            <div class="command-box">
+                <div class="command">git init</div>
+                <div class="description">Inicializa um novo repositório Git na pasta atual</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git clone &lt;url&gt;</div>
+                <div class="description">Clona um repositório remoto para sua máquina</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git status</div>
+                <div class="description">Mostra o estado atual do repositório</div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Comandos Básicos -->
+        <div class="slide">
+            <h2>Comandos Básicos 📝</h2>
+            <div class="command-box">
+                <div class="command">git add &lt;arquivo&gt;</div>
+                <div class="description">Adiciona arquivo específico à área de stage</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git add .</div>
+                <div class="description">Adiciona todos os arquivos modificados à área de stage</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git commit -m "mensagem"</div>
+                <div class="description">Confirma as mudanças com uma mensagem descritiva</div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Fluxo de Trabalho -->
+        <div class="slide">
+            <h2>Fluxo de Trabalho Git 🔄</h2>
+            <div class="git-flow">
+                <div class="flow-item">
+                    <h3>Working Directory</h3>
+                    <p>Arquivos modificados</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="flow-item">
+                    <h3>Staging Area</h3>
+                    <p>git add</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="flow-item">
+                    <h3>Repository</h3>
+                    <p>git commit</p>
+                </div>
+            </div>
+            <p style="margin-top: 30px; font-size: 1.1em;">
+                <span class="important">Working Directory</span> → <span class="success">git add</span> → 
+                <span class="important">Staging</span> → <span class="success">git commit</span> → 
+                <span class="important">Repository</span>
+            </p>
+        </div>
+
+        <!-- Slide 7: Visualizando Histórico -->
+        <div class="slide">
+            <h2>Visualizando Histórico 📊</h2>
+            <div class="command-box">
+                <div class="command">git log</div>
+                <div class="description">Mostra histórico completo de commits</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git log --oneline</div>
+                <div class="description">Histórico resumido em uma linha por commit</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git log --graph</div>
+                <div class="description">Mostra histórico com representação gráfica</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git show &lt;commit&gt;</div>
+                <div class="description">Mostra detalhes de um commit específico</div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Trabalhando com Branches -->
+        <div class="slide">
+            <h2>Trabalhando com Branches 🌳</h2>
+            <div class="command-box">
+                <div class="command">git branch</div>
+                <div class="description">Lista todas as branches locais</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git branch &lt;nome&gt;</div>
+                <div class="description">Cria uma nova branch</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git checkout &lt;branch&gt;</div>
+                <div class="description">Muda para uma branch específica</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git checkout -b &lt;nome&gt;</div>
+                <div class="description">Cria e muda para uma nova branch</div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Merge e Resolução de Conflitos -->
+        <div class="slide">
+            <h2>Merge e Conflitos 🤝</h2>
+            <div class="command-box">
+                <div class="command">git merge &lt;branch&gt;</div>
+                <div class="description">Faz merge de uma branch na branch atual</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git diff</div>
+                <div class="description">Mostra diferenças entre arquivos</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git mergetool</div>
+                <div class="description">Abre ferramenta para resolver conflitos</div>
+            </div>
+            <p style="margin-top: 30px; font-size: 1.1em;">
+                <span class="danger">Conflitos</span> acontecem quando duas branches modificam as mesmas linhas
+            </p>
+        </div>
+
+        <!-- Slide 10: Repositórios Remotos -->
+        <div class="slide">
+            <h2>Repositórios Remotos 🌐</h2>
+            <div class="command-box">
+                <div class="command">git remote add origin &lt;url&gt;</div>
+                <div class="description">Adiciona um repositório remoto</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git push origin main</div>
+                <div class="description">Envia commits para o repositório remoto</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git pull origin main</div>
+                <div class="description">Baixa e faz merge das mudanças remotas</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git fetch</div>
+                <div class="description">Baixa mudanças sem fazer merge</div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Comandos Úteis -->
+        <div class="slide">
+            <h2>Comandos Úteis 🛠️</h2>
+            <div class="command-box">
+                <div class="command">git reset --soft HEAD~1</div>
+                <div class="description">Desfaz último commit mantendo mudanças</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git reset --hard HEAD~1</div>
+                <div class="description"><span class="danger">Desfaz último commit e mudanças</span></div>
+            </div>
+            <div class="command-box">
+                <div class="command">git stash</div>
+                <div class="description">Salva mudanças temporariamente</div>
+            </div>
+            <div class="command-box">
+                <div class="command">git stash pop</div>
+                <div class="description">Restaura mudanças salvas no stash</div>
+            </div>
+        </div>
+
+        <!-- Slide 12: .gitignore -->
+        <div class="slide">
+            <h2>.gitignore 🚫</h2>
+            <div style="text-align: left; margin: 30px 0;">
+                <p style="font-size: 1.2em; margin-bottom: 20px;">Arquivo que especifica quais arquivos o Git deve ignorar:</p>
+                <div class="command-box">
+                    <div class="command"># Comentários</div>
+                    <div class="command">*.log</div>
+                    <div class="description">Ignora todos os arquivos .log</div>
+                    <div class="command">node_modules/</div>
+                    <div class="description">Ignora a pasta node_modules</div>
+                    <div class="command">.env</div>
+                    <div class="description">Ignora arquivo de configuração</div>
+                    <div class="command">*.tmp</div>
+                    <div class="description">Ignora arquivos temporários</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Boas Práticas -->
+        <div class="slide">
+            <h2>Boas Práticas ✨</h2>
+            <ul>
+                <li>Faça <span class="success">commits frequentes</span> e pequenos</li>
+                <li>Use <span class="important">mensagens descritivas</span> nos commits</li>
+                <li>Crie <span class="success">branches</span> para novas features</li>
+                <li>Sempre <span class="success">teste</span> antes de fazer push</li>
+                <li>Use <span class="important">.gitignore</span> para arquivos desnecessários</li>
+                <li>Faça <span class="success">pull</span> antes de push</li>
+                <li>Resolva <span class="danger">conflitos</span> cuidadosamente</li>
+            </ul>
+        </div>
+
+        <!-- Slide 14: Recursos Adicionais -->
+        <div class="slide">
+            <h2>Recursos Adicionais 📚</h2>
+            <ul>
+                <li><span class="success">GitHub</span> - Hospedagem de repositórios</li>
+                <li><span class="success">GitLab</span> - Plataforma DevOps completa</li>
+                <li><span class="success">Bitbucket</span> - Integração com Atlassian</li>
+                <li><span class="important">Git GUI</span> - Interface gráfica</li>
+                <li><span class="important">VS Code</span> - Extensões para Git</li>
+                <li><span class="success">git-flow</span> - Modelo de branching</li>
+            </ul>
+            <p style="margin-top: 40px; font-size: 1.2em;">
+                📖 Documentação oficial: <span class="important">git-scm.com</span>
+            </p>
+        </div>
+
+        <!-- Slide 15: Conclusão -->
+        <div class="slide">
+            <div class="git-logo">🎯</div>
+            <h2>Conclusão</h2>
+            <p style="font-size: 1.3em; margin: 30px 0; line-height: 1.6;">
+                Git é uma <span class="success">ferramenta essencial</span> para qualquer desenvolvedor.<br>
+                Com estes comandos você já pode <span class="important">começar a versionar</span> seus projetos!
+            </p>
+            <div style="margin-top: 50px;">
+                <h3>🚀 Próximos Passos:</h3>
+                <ul style="text-align: center; list-style: none;">
+                    <li style="margin: 15px 0;">Pratique com projetos pessoais</li>
+                    <li style="margin: 15px 0;">Explore GitHub/GitLab</li>
+                    <li style="margin: 15px 0;">Aprenda sobre Git Flow</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">15</span>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()">← Anterior</button>
+        <button class="nav-btn" onclick="nextSlide()">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function previousSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Navegação por teclado
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            } else if (e.key === 'Home') {
+                showSlide(0);
+            } else if (e.key === 'End') {
+                showSlide(totalSlides - 1);
+            }
+        });
+
+        // Auto-play opcional (descomente para ativar)
+        // setInterval(nextSlide, 10000); // Muda slide a cada 10 segundos
+    </script>
+</body>
+</html>
