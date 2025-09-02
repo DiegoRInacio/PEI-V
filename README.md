@@ -60,10 +60,10 @@ Desenvolver e validar um **MVP (Produto Mínimo Viável)** relacionado ao projet
 |---------|---------------------------------------------|---------------------------------------------|
 | 1       | Diagnóstico inicial                         | Relatório de problema/necessidades          |
 | 2       | Definição do MVP                            | Canvas de MVP                               |
-| 3 – 4   | Desenvolvimento do MVP                      | MVP funcional                               |
+| 3 – 4   | Desenvolvimento do MVP                      | MVP funcional --> __P1__                    |
 | 5       | Testes com usuários                         | Registro de feedback                        |
 | 6       | Refinamento e ajustes                       | Versão 2 do MVP                             |
-| 7       | Apresentação final                          | Apresentação (oral + slides + material)     |
+| 7       | Apresentação final                          | Apresentação (oral + slides + material) --> __P2__ |
 
 ---
 
