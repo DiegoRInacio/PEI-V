@@ -38,13 +38,18 @@ Desenvolver e validar um **MVP (Produto Mínimo Viável)** relacionado ao projet
 
 ---
 
-### 5. Refinamento e Ajustes (Semana 6)
+### 5. Refinamento (Semana 6)
+- Apresentar as mudanças rápidas no MVP conforme o feedback coletado.  
+- **Entregável**: **O que será aturalizado na Versão 2** do MVP, com breve descrição do que ficou compreendido do que deve ser melhorado.
+---
+
+### 6. Ajustes (Semana 7)
 - Fazer mudanças rápidas no MVP conforme o feedback coletado.  
 - **Entregável**: **Versão 2** do MVP, com breve descrição do que foi melhorado.
 
 ---
 
-### 6. Apresentação Final (Semana 7)
+### 6. Apresentação Final (Semana 8)
 - Preparar uma apresentação de **10 minutos** (oral + slides) mostrando:  
   1. Problema real.  
   2. MVP criado.  
