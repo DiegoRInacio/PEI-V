@@ -49,7 +49,7 @@ Desenvolver e validar um **MVP (Produto Mínimo Viável)** relacionado ao projet
 
 ---
 
-### 6. Apresentação Final (Semana 8)
+### 7. Apresentação Final (Semana 8)
 - Preparar uma apresentação de **10 minutos** (oral + slides) mostrando:  
   1. Problema real.  
   2. MVP criado.  
