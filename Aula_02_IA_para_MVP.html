@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uso de IA para Desenvolvimento de MVP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Trebuchet MS', 'Segoe UI', Verdana, sans-serif;
+            background-color: #b9875a;
+            background-image:
+                radial-gradient(circle at 18% 22%, rgba(0,0,0,.14) 0 2px, transparent 3px),
+                radial-gradient(circle at 62% 8%, rgba(0,0,0,.12) 0 2px, transparent 3px),
+                radial-gradient(circle at 40% 60%, rgba(0,0,0,.13) 0 2px, transparent 3px),
+                radial-gradient(circle at 85% 45%, rgba(0,0,0,.12) 0 2px, transparent 3px),
+                radial-gradient(circle at 12% 80%, rgba(0,0,0,.13) 0 2px, transparent 3px),
+                radial-gradient(circle at 70% 85%, rgba(0,0,0,.12) 0 2px, transparent 3px),
+                repeating-linear-gradient(45deg, rgba(0,0,0,.05) 0 1px, transparent 1px 7px),
+                linear-gradient(160deg, #b9875a, #8f6038 75%);
+            background-size: 140px 140px, 160px 160px, 130px 130px, 150px 150px, 145px 145px, 155px 155px, auto, auto;
+            color: #1f2d3a;
+            overflow: hidden;
+        }
+
+        .presentation {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            width: 92%;
+            max-width: 1100px;
+            height: 85%;
+            background-color: #eef5fa;
+            background-image:
+                linear-gradient(rgba(47,102,144,.14) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(47,102,144,.14) 1px, transparent 1px);
+            background-size: 26px 26px;
+            border-radius: 4px;
+            padding: 50px 60px;
+            text-align: center;
+            box-shadow: 0 22px 40px rgba(0, 0, 0, 0.35);
+            animation: slideIn 0.5s ease-in-out;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide::before {
+            /* percevejo dourado, como um ponto de solda num circuito */
+            content: "";
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 32% 30%, #ffe3a0, #c79a3c 55%, #8f6a1f 100%);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+            z-index: 3;
+        }
+
+        .slide::after {
+            /* trilha de circuito pontilhada no topo da prancheta */
+            content: "";
+            position: absolute;
+            top: 24px;
+            left: 70px;
+            right: 70px;
+            height: 2px;
+            background-image: repeating-linear-gradient(to right, #2f6690 0 10px, transparent 10px 20px);
+            opacity: 0.5;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Kalam', 'Segoe Print', cursive;
+            font-weight: 700;
+            font-size: 3.1em;
+            margin-bottom: 20px;
+            color: #2f6690;
+        }
+
+        h2 {
+            font-family: 'Kalam', 'Segoe Print', cursive;
+            font-weight: 700;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            color: #1f2d3a;
+        }
+
+        h3 {
+            font-family: 'Kalam', 'Segoe Print', cursive;
+            font-weight: 700;
+            font-size: 1.55em;
+            margin-bottom: 15px;
+            color: #b4790b;
+        }
+
+        .big-icon {
+            font-size: 5.5em;
+            margin: 10px 0 18px;
+            filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.2));
+        }
+
+        .command-box {
+            background: #dce9f1;
+            border-radius: 6px;
+            padding: 20px 24px;
+            margin: 14px 0;
+            font-family: 'Consolas', 'Courier New', monospace;
+            border-left: 5px solid #2f6690;
+            text-align: left;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        .command {
+            color: #1d4a68;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .description {
+            color: #4c5f70;
+            font-size: 0.98em;
+            line-height: 1.5;
+        }
+
+        .workflow-step {
+            background: #dce9f1;
+            border-left: 5px solid #b4790b;
+            border-radius: 6px;
+            padding: 20px 25px;
+            margin: 12px 0;
+            text-align: left;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+            transition: transform 0.25s ease;
+        }
+
+        .workflow-step:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 16px rgba(0, 0, 0, 0.18);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #b4790b;
+            color: #eef5fa;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            line-height: 34px;
+            text-align: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.05em;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            padding: 14px 24px;
+            background: #1f2d3a;
+            border: 2px solid #1f2d3a;
+            border-radius: 4px;
+            color: #eef5fa;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: bold;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: #2f6690;
+            border-color: #1d4a68;
+            transform: rotate(1deg);
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: #c79a3c;
+            color: #1f2d3a;
+            padding: 9px 20px;
+            border-radius: 2px;
+            font-size: 0.95em;
+            font-weight: bold;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+            transform: rotate(-1.5deg);
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: #eef5fa;
+            padding: 9px 20px;
+            border-radius: 2px;
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #1f2d3a;
+            text-decoration: none;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+            transform: rotate(1.5deg);
+            display: inline-block;
+        }
+        .home-btn:hover { background: #c79a3c; }
+
+        .important { color: #b4790b; font-weight: bold; }
+        .danger { color: #b23b3b; font-weight: bold; }
+        .success { color: #2f6690; font-weight: bold; }
+
+        ul { text-align: left; list-style: none; padding: 0; }
+
+        li {
+            margin: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.08em;
+        }
+
+        li::before {
+            content: "▣";
+            position: absolute;
+            left: 0;
+            color: #2f6690;
+            font-weight: bold;
+        }
+
+        .subtle-list li {
+            font-size: 0.95em;
+            margin: 8px 0;
+        }
+
+        table.ai-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.92em;
+            text-align: left;
+            background: #fbfdff;
+        }
+        table.ai-table th {
+            background: #2f6690;
+            color: #eef5fa;
+            padding: 10px 12px;
+            border-bottom: 2px solid #1d4a68;
+        }
+        table.ai-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #cddce6;
+            color: #1f2d3a;
+        }
+        table.ai-table tr:hover td { background: #dce9f1; }
+        table.ai-table code {
+            font-family: Consolas, monospace;
+            background: #dce9f1;
+            color: #1d4a68;
+            padding: 0.05rem 0.35rem;
+            border-radius: 4px;
+        }
+
+        .source-note {
+            margin-top: 18px;
+            font-size: 0.85em;
+            color: #4c5f70;
+            border-top: 1px dashed #9fb8c8;
+            padding-top: 12px;
+        }
+
+        .checklist-box {
+            background: #dce9f1;
+            border: 2px solid #b4790b;
+            border-radius: 10px;
+            padding: 25px 30px;
+            text-align: left;
+            margin-top: 10px;
+        }
+        .checklist-box label {
+            display: block;
+            margin: 10px 0;
+            font-size: 1.05em;
+            color: #1f2d3a;
+        }
+
+        @media (max-width: 768px) {
+            .slide { padding: 30px; width: 95%; }
+            h1 { font-size: 2.3em; }
+            h2 { font-size: 1.7em; }
+            .big-icon { font-size: 4em; }
+            .nav-btn { padding: 12px 20px; font-size: 0.9em; }
+            table.ai-table { font-size: 0.78em; }
+        }
+    </style>
+</head>
+<body>
+    <a class="home-btn" href="index.html">&larr; Portal PEI</a>
+
+    <div class="presentation">
+        <!-- Slide 1: Título -->
+        <div class="slide active">
+            <div class="big-icon">🤖</div>
+            <h1>Uso de IA</h1>
+            <h2>para Desenvolvimento de MVP</h2>
+            <p style="font-size: 1.2em; margin-top: 20px; opacity: 0.9;">
+                Boas práticas, definição de escopo e segurança &mdash; sem cair no vibecoding
+            </p>
+            <p style="margin-top: 20px; font-size: 1em; opacity: 0.75;">
+                PEI V &middot; Prof.: Diego Ramos Inácio
+            </p>
+        </div>
+
+        <!-- Slide 2: O Problema -->
+        <div class="slide">
+            <h2>Um MVP gerado numa tarde 🚨</h2>
+            <ul>
+                <li>Funciona perfeitamente na <span class="success">demo</span>...</li>
+                <li>...mas quebra no <span class="danger">primeiro teste com usuário real</span></li>
+                <li>Tem <span class="danger">senha/chave de API exposta</span> direto no código</li>
+                <li>O próprio aluno <span class="danger">não consegue explicar</span> o que o código faz na banca</li>
+            </ul>
+            <p style="margin-top: 30px; font-size: 1.15em;">
+                Isso é <span class="important">vibecoding</span>: aceitar o que a IA gera sem entender, sem revisar, sem conseguir defender.
+            </p>
+        </div>
+
+        <!-- Slide 3: O que é vibecoding -->
+        <div class="slide">
+            <h2>O que é "vibecoding"? 💭</h2>
+            <ul>
+                <li>Pedir código para a IA e <span class="danger">aceitar sem ler</span></li>
+                <li>Não saber explicar <span class="important">por que</span> o código funciona (ou se funciona)</li>
+                <li>Deixar a IA decidir o <span class="important">escopo</span> do projeto, não só a implementação</li>
+                <li>Confundir "a demo rodou" com "o problema foi resolvido"</li>
+            </ul>
+            <p style="margin-top: 30px; font-size: 1.2em;">
+                Regra prática: <span class="success">"Se eu não consigo explicar em 2 frases o que esse código faz e por que, eu não comito."</span>
+            </p>
+        </div>
+
+        <!-- Slide 4: Por que compromete a nota -->
+        <div class="slide">
+            <h2>Por que isso compromete sua nota ⚠️</h2>
+            <div class="command-box">
+                <div class="command">Critérios de avaliação do PEI V</div>
+                <div class="description">
+                    "Alterações geradas automaticamente" e "participação apenas declarada, sem evidência verificável"
+                    <span class="danger">NÃO contam</span> como participação individual.
+                </div>
+            </div>
+            <ul style="margin-top: 20px;">
+                <li>A nota é por <span class="important">autoria comprovada</span>: commits, PRs, revisões, correções após feedback</li>
+                <li>Quem não entende o próprio PR <span class="danger">não consegue defendê-lo</span> numa Issue de avaliação nem na banca</li>
+                <li>Commit pequeno e compreensível vale <span class="success">mais</span> que vários commits gerados em bloco</li>
+            </ul>
+        </div>
+
+        <!-- Slide 5: Definindo o que é importante -->
+        <div class="slide">
+            <h2>Definir o que é importante <span style="font-size:0.8em">antes</span> do prompt 🎯</h2>
+            <div class="workflow-step">
+                <span class="step-number">1</span>
+                Volte ao <span class="important">problema validado</span> com os 3 usuários reais (etapa 1 do plano de trabalho). A IA não conhece o problema, só o que você escreve.
+            </div>
+            <div class="workflow-step">
+                <span class="step-number">2</span>
+                Use <span class="important">MoSCoW</span> (Must / Should / Could / Won't) sobre o Lean Canvas da etapa 2 para priorizar.
+            </div>
+            <div class="workflow-step">
+                <span class="step-number">3</span>
+                Regra: <span class="success">MVP = a menor coisa que testa a hipótese</span>, não a maior coisa que a IA consegue gerar.
+            </div>
+        </div>
+
+        <!-- Slide 6: Boas práticas de uso de IA -->
+        <div class="slide">
+            <h2>Boas práticas no uso de IA 📝</h2>
+            <ul>
+                <li>Prompt com <span class="success">contexto real</span>: problema, público, stack &mdash; nunca genérico</li>
+                <li><span class="important">Ler linha a linha</span> todo código gerado antes de aceitar</li>
+                <li>Pedir à IA para <span class="success">explicar o próprio código</span> que gerou &mdash; teste de entendimento</li>
+                <li>Comitar em <span class="important">pedaços pequenos e compreensíveis</span></li>
+                <li>Usar IA também para gerar <span class="success">testes e casos de borda</span>, não só features</li>
+                <li>Checar se <span class="danger">bibliotecas sugeridas existem de fato</span> e são mantidas (IA alucina nomes de pacotes)</li>
+            </ul>
+        </div>
+
+        <!-- Slide 6b: Exemplo - feature, teste e caso de borda -->
+        <div class="slide">
+            <h2>Feature, teste e caso de borda 🧩</h2>
+            <p style="text-align:left; font-size:1.05em; margin-bottom: 10px;">
+                <span class="important">Feature:</span> validar se alguém pode se cadastrar no sistema (idade mínima de 16 anos).
+            </p>
+            <div class="command-box">
+                <div class="command">def pode_cadastrar(idade):<br>&nbsp;&nbsp;&nbsp;&nbsp;return idade &gt;= 16</div>
+                <div class="description">A IA gera isso fácil &mdash; é só a feature, ainda sem nenhum teste</div>
+            </div>
+            <div class="command-box">
+                <div class="command">def test_maior_de_idade_pode_cadastrar():<br>&nbsp;&nbsp;&nbsp;&nbsp;assert pode_cadastrar(20) == True</div>
+                <div class="description"><span class="success">Teste comum:</span> confirma o caminho esperado</div>
+            </div>
+            <div class="command-box">
+                <div class="command">def test_idade_negativa():<br>&nbsp;&nbsp;&nbsp;&nbsp;assert pode_cadastrar(-1) == False</div>
+                <div class="description"><span class="danger">Caso de borda:</span> entrada inválida que a regra simples não trata explicitamente &mdash; exatamente o tipo de furo que aparece quando um usuário real digita algo inesperado</div>
+            </div>
+            <p style="margin-top: 10px; font-size: 1.05em;">
+                Pedir só a feature para a IA não é suficiente: <span class="important">peça também os testes e os casos de borda</span>.
+            </p>
+        </div>
+
+        <!-- Slide 7: Segurança básica -->
+        <div class="slide">
+            <h2>Segurança básica para o MVP 🔒</h2>
+            <div class="command-box">
+                <div class="command">.gitignore + variáveis de ambiente</div>
+                <div class="description">Nunca commitar senha, token ou API key</div>
+            </div>
+            <div class="command-box">
+                <div class="command">Validação de entrada</div>
+                <div class="description">Todo dado vindo de formulário/usuário deve ser validado</div>
+            </div>
+            <div class="command-box">
+                <div class="command">HTTPS + autenticação mínima decente</div>
+                <div class="description">Nunca implementar hash de senha "na mão"</div>
+            </div>
+            <div class="command-box">
+                <div class="command">"Revise a segurança deste código"</div>
+                <div class="description">Pedir isso à IA é uma prática válida e barata &mdash; use-a também para revisar, não só gerar</div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Ranking de IAs gratuitas - como comparar -->
+        <div class="slide">
+            <h2>Ranking de IAs gratuitas: como comparar de verdade 📊</h2>
+            <ul>
+                <li>Benchmarks (SWE-bench, Artificial Analysis) mudam <span class="important">mês a mês</span></li>
+                <li>Blogs agregadores costumam citar números <span class="danger">desatualizados ou de metodologias diferentes</span></li>
+                <li>Regra: <span class="success">não confie em ranking de blog, confie na fonte oficial</span> &mdash; o mesmo princípio vale para código gerado por IA</li>
+            </ul>
+            <div class="command-box" style="margin-top: 20px;">
+                <div class="command">Fontes para consultar em aula, em tempo real</div>
+                <div class="description">
+                    swebench.com/verified.html &mdash; benchmark de tarefas reais de código (resolver issues de repositórios reais)<br><br>
+                    artificialanalysis.ai &mdash; índice de custo x performance dos modelos<br><br>
+                    páginas oficiais de preço:<br>
+                    (github.com/features/copilot/plans, claude.ai/pricing, cursor.com/pricing, gemini.google.com)
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Ferramentas gratuitas e configuração -->
+        <div class="slide">
+            <h2>Ferramentas gratuitas &mdash; configuração básica ⚙️</h2>
+            <table class="ai-table">
+                <tr>
+                    <th>Ferramenta</th>
+                    <th>Acesso gratuito</th>
+                    <th>Configuração básica</th>
+                </tr>
+                <tr>
+                    <td>Claude.ai / ChatGPT (free)</td>
+                    <td>Chat web, modelos menores do catálogo</td>
+                    <td>Pensar arquitetura/prompt antes de gerar código; revisar manualmente</td>
+                </tr>
+                <tr>
+                    <td>GitHub Copilot Free</td>
+                    <td>Extensão no VS Code, cota limitada</td>
+                    <td>Login com conta GitHub; nunca deixar token em arquivo versionado</td>
+                </tr>
+                <tr>
+                    <td>Gemini (CLI / AI Studio)</td>
+                    <td>API com cota diária gratuita</td>
+                    <td>API key sempre em variável de ambiente, nunca hardcoded</td>
+                </tr>
+                <tr>
+                    <td>Cursor (free tier)</td>
+                    <td>Editor próprio, cota de requisições</td>
+                    <td>Arquivo <code>.cursorrules</code> no projeto com contexto fixo do MVP</td>
+                </tr>
+                <tr>
+                    <td>DeepSeek (free)</td>
+                    <td>Chat web / API barata</td>
+                    <td>Boa p/ iteração rápida &mdash; sempre revisar antes de aceitar</td>
+                </tr>
+                <tr>
+                    <td>Ollama (modelo local)</td>
+                    <td>100% gratuito, roda na máquina</td>
+                    <td>Opção offline &mdash; zero risco de vazar dado sensível do projeto</td>
+                </tr>
+            </table>
+            <p class="source-note">
+                "Gratuito" sempre tem uma troca: cota, modelo mais fraco, ou seus dados/prompts usados para treinar o próximo modelo.
+                <span class="danger">Nunca cole dado sensível de usuário real</span> da comunidade atendida pelo projeto de extensão em ferramenta gratuita sem checar a política de privacidade.
+            </p>
+        </div>
+
+        <!-- Slide 10: Atividade prática -->
+        <div class="slide">
+            <h2>Atividade prática 🧪</h2>
+            <div class="workflow-step">
+                <span class="step-number">1</span>
+                Em grupo, peguem um trecho real do próprio MVP e gerem uma função com IA.
+            </div>
+            <div class="workflow-step">
+                <span class="step-number">2</span>
+                Apliquem o checklist de revisão (entendimento + segurança) antes de aceitar.
+            </div>
+            <div class="workflow-step">
+                <span class="step-number">3</span>
+                Justifiquem por escrito, no formato de Issue usado na disciplina, por que aceitaram ou rejeitaram o código.
+            </div>
+        </div>
+
+        <!-- Slide 11: Checklist final -->
+        <div class="slide">
+            <h2>Checklist antes de comitar ✅</h2>
+            <div class="checklist-box">
+                <label>☐ Eu entendo o que esse código faz</label>
+                <label>☐ Eu testei</label>
+                <label>☐ Não expõe segredo (senha, token, chave de API)</label>
+                <label>☐ Resolve o problema validado com usuários reais</label>
+                <label>☐ Eu consigo explicar em uma frase por que fiz assim</label>
+            </div>
+        </div>
+
+        <!-- Slide 12: Conclusão -->
+        <div class="slide">
+            <div class="big-icon">🎯</div>
+            <h2>Conclusão</h2>
+            <p style="font-size: 1.25em; margin: 25px 0; line-height: 1.6;">
+                IA é uma <span class="success">ferramenta poderosa</span> para construir o MVP mais rápido &mdash;
+                desde que você mantenha o <span class="important">controle do escopo, do entendimento e da segurança</span>.
+            </p>
+            <ul class="subtle-list" style="margin-top: 10px;">
+                <li>Defina o essencial antes de abrir o prompt</li>
+                <li>Revise e entenda tudo que a IA gerar</li>
+                <li>Nunca exponha segredo nem dado sensível de usuário</li>
+                <li>Confirme ranking e limites em fontes oficiais, não em blogs</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">13</span>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()">← Anterior</button>
+        <button class="nav-btn" onclick="nextSlide()">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function previousSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            } else if (e.key === 'Home') {
+                showSlide(0);
+            } else if (e.key === 'End') {
+                showSlide(totalSlides - 1);
+            }
+        });
+    </script>
+</body>
+</html>
