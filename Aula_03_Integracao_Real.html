@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do Mock à Integração Real</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Trebuchet MS', 'Segoe UI', Verdana, sans-serif;
+            background-color: #b9875a;
+            background-image:
+                radial-gradient(circle at 18% 22%, rgba(0,0,0,.14) 0 2px, transparent 3px),
+                radial-gradient(circle at 62% 8%, rgba(0,0,0,.12) 0 2px, transparent 3px),
+                radial-gradient(circle at 40% 60%, rgba(0,0,0,.13) 0 2px, transparent 3px),
+                radial-gradient(circle at 85% 45%, rgba(0,0,0,.12) 0 2px, transparent 3px),
+                radial-gradient(circle at 12% 80%, rgba(0,0,0,.13) 0 2px, transparent 3px),
+                radial-gradient(circle at 70% 85%, rgba(0,0,0,.12) 0 2px, transparent 3px),
+                repeating-linear-gradient(45deg, rgba(0,0,0,.05) 0 1px, transparent 1px 7px),
+                linear-gradient(160deg, #b9875a, #8f6038 75%);
+            background-size: 140px 140px, 160px 160px, 130px 130px, 150px 150px, 145px 145px, 155px 155px, auto, auto;
+            color: #1f2d3a;
+            overflow: hidden;
+        }
+
+        .presentation {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            width: 92%;
+            max-width: 1100px;
+            height: 85%;
+            background-color: #eef5fa;
+            background-image:
+                linear-gradient(rgba(47,102,144,.14) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(47,102,144,.14) 1px, transparent 1px);
+            background-size: 26px 26px;
+            border-radius: 4px;
+            padding: 50px 60px;
+            text-align: center;
+            box-shadow: 0 22px 40px rgba(0, 0, 0, 0.35);
+            animation: slideIn 0.5s ease-in-out;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide::before {
+            content: "";
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 32% 30%, #ffe3a0, #c79a3c 55%, #8f6a1f 100%);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+            z-index: 3;
+        }
+
+        .slide::after {
+            content: "";
+            position: absolute;
+            top: 24px;
+            left: 70px;
+            right: 70px;
+            height: 2px;
+            background-image: repeating-linear-gradient(to right, #2f6690 0 10px, transparent 10px 20px);
+            opacity: 0.5;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Kalam', 'Segoe Print', cursive;
+            font-weight: 700;
+            font-size: 3.1em;
+            margin-bottom: 20px;
+            color: #2f6690;
+        }
+
+        h2 {
+            font-family: 'Kalam', 'Segoe Print', cursive;
+            font-weight: 700;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            color: #1f2d3a;
+        }
+
+        h3 {
+            font-family: 'Kalam', 'Segoe Print', cursive;
+            font-weight: 700;
+            font-size: 1.55em;
+            margin-bottom: 15px;
+            color: #b4790b;
+        }
+
+        .big-icon {
+            font-size: 5.5em;
+            margin: 10px 0 18px;
+            filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.2));
+        }
+
+        .command-box {
+            background: #dce9f1;
+            border-radius: 6px;
+            padding: 20px 24px;
+            margin: 14px 0;
+            font-family: 'Consolas', 'Courier New', monospace;
+            border-left: 5px solid #2f6690;
+            text-align: left;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        .command-box.bad { border-left-color: #b23b3b; }
+        .command-box.good { border-left-color: #2f6690; }
+
+        .command {
+            color: #1d4a68;
+            font-size: 1.05em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            white-space: pre-wrap;
+        }
+
+        .description {
+            color: #4c5f70;
+            font-size: 0.98em;
+            line-height: 1.5;
+        }
+
+        .compare {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+        .compare .command-box { flex: 1; margin: 14px 0; }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.75em;
+            font-weight: bold;
+            padding: 2px 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            letter-spacing: 0.03em;
+        }
+        .tag.bad { background: #f4dede; color: #b23b3b; }
+        .tag.good { background: #dcebe0; color: #1d6b40; }
+
+        .workflow-step {
+            background: #dce9f1;
+            border-left: 5px solid #b4790b;
+            border-radius: 6px;
+            padding: 20px 25px;
+            margin: 12px 0;
+            text-align: left;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+            transition: transform 0.25s ease;
+        }
+
+        .workflow-step:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 16px rgba(0, 0, 0, 0.18);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #b4790b;
+            color: #eef5fa;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            line-height: 34px;
+            text-align: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.05em;
+        }
+
+        .pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .pipeline-box {
+            background: #dce9f1;
+            border: 2px solid #2f6690;
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-weight: bold;
+            color: #1d4a68;
+            min-width: 140px;
+        }
+        .pipeline-arrow {
+            font-size: 1.6em;
+            color: #b4790b;
+            font-weight: bold;
+        }
+        .pipeline-label {
+            font-size: 0.7em;
+            color: #4c5f70;
+            font-weight: normal;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            padding: 14px 24px;
+            background: #1f2d3a;
+            border: 2px solid #1f2d3a;
+            border-radius: 4px;
+            color: #eef5fa;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: bold;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: #2f6690;
+            border-color: #1d4a68;
+            transform: rotate(1deg);
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: #c79a3c;
+            color: #1f2d3a;
+            padding: 9px 20px;
+            border-radius: 2px;
+            font-size: 0.95em;
+            font-weight: bold;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+            transform: rotate(-1.5deg);
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: #eef5fa;
+            padding: 9px 20px;
+            border-radius: 2px;
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #1f2d3a;
+            text-decoration: none;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+            transform: rotate(1.5deg);
+            display: inline-block;
+        }
+        .home-btn:hover { background: #c79a3c; }
+
+        .important { color: #b4790b; font-weight: bold; }
+        .danger { color: #b23b3b; font-weight: bold; }
+        .success { color: #2f6690; font-weight: bold; }
+
+        ul { text-align: left; list-style: none; padding: 0; }
+
+        li {
+            margin: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.08em;
+        }
+
+        li::before {
+            content: "▣";
+            position: absolute;
+            left: 0;
+            color: #2f6690;
+            font-weight: bold;
+        }
+
+        .subtle-list li {
+            font-size: 0.95em;
+            margin: 8px 0;
+        }
+
+        .source-note {
+            margin-top: 18px;
+            font-size: 0.85em;
+            color: #4c5f70;
+            border-top: 1px dashed #9fb8c8;
+            padding-top: 12px;
+        }
+
+        .checklist-box {
+            background: #dce9f1;
+            border: 2px solid #b4790b;
+            border-radius: 10px;
+            padding: 25px 30px;
+            text-align: left;
+            margin-top: 10px;
+        }
+        .checklist-box label {
+            display: block;
+            margin: 10px 0;
+            font-size: 1.05em;
+            color: #1f2d3a;
+        }
+
+        @media (max-width: 768px) {
+            .slide { padding: 30px; width: 95%; }
+            h1 { font-size: 2.3em; }
+            h2 { font-size: 1.7em; }
+            .big-icon { font-size: 4em; }
+            .nav-btn { padding: 12px 20px; font-size: 0.9em; }
+            .compare { flex-direction: column; }
+            .pipeline { flex-direction: column; }
+            .pipeline-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+    <a class="home-btn" href="index.html">&larr; Portal PEI</a>
+
+    <div class="presentation">
+        <!-- Slide 1: Título -->
+        <div class="slide active">
+            <div class="big-icon">🔌</div>
+            <h1>Do Mock</h1>
+            <h2>à Integração Real</h2>
+            <p style="font-size: 1.2em; margin-top: 20px; opacity: 0.9;">
+                Fechando o ciclo do MVP &mdash; e deixando isso visível no Git
+            </p>
+            <p style="margin-top: 20px; font-size: 1em; opacity: 0.75;">
+                PEI V &middot; Prof.: Diego Ramos Inácio
+            </p>
+        </div>
+
+        <!-- Slide 2: O padrão observado -->
+        <div class="slide">
+            <h2>Um padrão que apareceu em mais de um repositório 🚨</h2>
+            <div class="command-box bad">
+                <div class="command">const [agendamentos, setAgendamentos] = useState(mockAgendamentos);
+// Na integração, troque o valor inicial pela API</div>
+                <div class="description">Essa troca <span class="danger">nunca aconteceu</span>. O comentário virou documentação de uma dívida que ninguém pagou.</div>
+            </div>
+            <ul style="margin-top: 10px;">
+                <li>A tela funciona <span class="success">perfeitamente</span> na demo</li>
+                <li>O backend existe no repositório &mdash; mas o próprio <code>README</code> dele diz <span class="danger">"ainda não há endpoints de negócio configurados"</span></li>
+                <li>O Pull Request que "entrega" a tela só mexe em arquivos de <span class="important">frontend</span>, sem descrição do que foi feito</li>
+            </ul>
+        </div>
+
+        <!-- Slide 3: Por que acontece -->
+        <div class="slide">
+            <h2>Por que isso acontece 💭</h2>
+            <p style="text-align:left; font-size: 1.1em;">
+                Vem direto do que vimos na aula passada: a IA gera a tela bonita e funcional com dado fixo
+                <span class="important">em segundos</span>. Ligar isso ao backend de verdade dá mais trabalho
+                &mdash; schema, rota, tratamento de erro &mdash; e sempre fica "pra depois".
+            </p>
+            <p style="margin-top: 20px; font-size: 1.1em;">
+                O "depois" não chega porque a demo <span class="danger">já parece pronta</span>.
+            </p>
+            <p style="margin-top: 30px; font-size: 1.2em;">
+                Regra prática: <span class="success">"mock é uma etapa do processo, não o produto final."</span>
+            </p>
+        </div>
+
+        <!-- Slide 4: Mock vs Integração real -->
+        <div class="slide">
+            <h2>Mock vs. Integração real &mdash; como diferenciar 🔍</h2>
+            <div class="compare">
+                <div class="command-box bad">
+                    <span class="tag bad">mock</span>
+                    <div class="command">import mockData from './dadosficticios.js';
+
+const [dados] = useState(mockData);</div>
+                    <div class="description">Nenhuma chamada de rede. O dado nunca sai do arquivo local.</div>
+                </div>
+                <div class="command-box good">
+                    <span class="tag good">integração real</span>
+                    <div class="command">const res = await fetch('/api/pacientes/1/agendamentos');
+if (!res.ok) throw new Error('API indisponível');
+const dados = await res.json();</div>
+                    <div class="description">Chama o backend de verdade e <span class="important">trata o caso de erro</span> &mdash; não só o caminho feliz.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Pipeline esperado -->
+        <div class="slide">
+            <h2>O que uma integração real precisa ter 📐</h2>
+            <div class="pipeline">
+                <div class="pipeline-box">Frontend<span class="pipeline-label">componente de tela</span></div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-box">Cliente HTTP<span class="pipeline-label">fetch / axios</span></div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-box">Backend<span class="pipeline-label">controller / rota</span></div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-box">Banco de dados<span class="pipeline-label">persistência real</span></div>
+            </div>
+            <p style="font-size: 1.05em; margin-top: 10px;">
+                Se qualquer uma dessas setas <span class="danger">não existe no código</span> (só no plano), a integração não é real ainda &mdash;
+                e esse diagrama (ou um parecido) é parte do <span class="important">entregável</span>, não algo que o professor precisa pedir à parte.
+            </p>
+        </div>
+
+        <!-- Slide 6: Checklist técnico -->
+        <div class="slide">
+            <h2>Checklist técnico: sua integração é real? ✅</h2>
+            <div class="checklist-box">
+                <label>☐ Existe um cliente HTTP no frontend (ex: <code>api/</code>, <code>services/http.js</code>) além do arquivo de mock?</label>
+                <label>☐ O backend tem pelo menos 1 controller/rota implementado para a entidade principal do MVP?</label>
+                <label>☐ O frontend trata o caso de erro (API fora do ar), não só o caminho feliz?</label>
+                <label>☐ O PR que entrega a feature tem arquivos de frontend <b>e</b> de backend juntos?</label>
+                <label>☐ Se ainda usa mock, ele está isolado como <i>fallback</i> &mdash; não é a única fonte de dado possível?</label>
+            </div>
+        </div>
+
+        <!-- Slide 7: Commits como evidência -->
+        <div class="slide">
+            <h2>Commits como evidência de equipe 👥</h2>
+            <div class="command-box bad">
+                <div class="command">git log --oneline feature/dashboard
+4 commits, 1 autor, grupo de 5 pessoas</div>
+                <div class="description">Padrão encontrado em mais de uma entrega: a branch existe, o PR existe &mdash; mas só uma pessoa aparece como autora de tudo.</div>
+            </div>
+            <div class="command-box" style="border-left-color:#b4790b;">
+                <div class="command">Critério oficial do PEI V (README do repositório da disciplina)</div>
+                <div class="description">
+                    "A pontuação é <span class="important">individual</span>: a entrega pertence ao grupo, mas a nota de cada aluno considera sua
+                    participação comprovada no projeto (<span class="success">commits, Pull Requests, revisões</span> e demais evidências rastreáveis
+                    no repositório), <span class="danger">não apenas o resultado entregue pelo grupo como um todo</span>."
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: PR sem descrição -->
+        <div class="slide">
+            <h2>PR sem descrição = nota sem evidência 📝</h2>
+            <div class="compare">
+                <div class="command-box bad">
+                    <span class="tag bad">PR ruim</span>
+                    <div class="command">Título: "Feature/dashboard paciente"
+Descrição: _No description provided._</div>
+                    <div class="description">Ninguém de fora do grupo consegue saber o que foi feito, por quem, nem por quê.</div>
+                </div>
+                <div class="command-box good">
+                    <span class="tag good">PR bom</span>
+                    <div class="command">O que foi feito:
+Por que (qual parte do MVP resolve):
+Como testar:
+Quem fez o quê:</div>
+                    <div class="description">Esse template, preenchido de verdade, <span class="important">é</span> a evidência de participação que conta na nota.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Atividade prática -->
+        <div class="slide">
+            <h2>Atividade prática 🧪</h2>
+            <div class="workflow-step">
+                <span class="step-number">1</span>
+                Em grupo, abram o próprio repositório e rodem o checklist técnico (slide 6) no PR mais recente.
+            </div>
+            <div class="workflow-step">
+                <span class="step-number">2</span>
+                Verifiquem o histórico de commits da branch: quantos autores diferentes aparecem de verdade?
+            </div>
+            <div class="workflow-step">
+                <span class="step-number">3</span>
+                Abram uma Issue registrando o que falta para a integração ficar real (e quem vai fazer o quê).
+            </div>
+        </div>
+
+        <!-- Slide 10: Checklist final -->
+        <div class="slide">
+            <h2>Checklist antes de apresentar ✅</h2>
+            <div class="checklist-box">
+                <label>☐ O front-end chama o back-end de verdade (não só mock)</label>
+                <label>☐ O backend tem pelo menos uma rota funcionando de ponta a ponta</label>
+                <label>☐ Erro de API é tratado na tela, não trava nem finge que funcionou</label>
+                <label>☐ O PR da feature principal tem descrição completa</label>
+                <label>☐ Os commits da branch mostram mais de uma pessoa do grupo participando</label>
+                <label>☐ Existe um diagrama simples da arquitetura no repositório (docs/)</label>
+            </div>
+        </div>
+
+        <!-- Slide 11: Conclusão -->
+        <div class="slide">
+            <div class="big-icon">🎯</div>
+            <h2>Conclusão</h2>
+            <p style="font-size: 1.25em; margin: 25px 0; line-height: 1.6;">
+                Mock é uma ferramenta válida para <span class="success">testar a tela rápido</span> &mdash;
+                mas o MVP só está pronto quando ele <span class="important">conversa de verdade com o backend</span>
+                e isso aparece no histórico do Git como trabalho <span class="important">de todo o grupo</span>.
+            </p>
+            <ul class="subtle-list" style="margin-top: 10px;">
+                <li>Mock é etapa, não entrega final</li>
+                <li>Integração real = frontend + backend + banco, todos no código</li>
+                <li>PR com descrição e commits de todos = evidência que conta na nota</li>
+                <li>Diagrama de arquitetura é parte do entregável, não pedido avulso</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">13</span>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()">← Anterior</button>
+        <button class="nav-btn" onclick="nextSlide()">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function previousSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            } else if (e.key === 'Home') {
+                showSlide(0);
+            } else if (e.key === 'End') {
+                showSlide(totalSlides - 1);
+            }
+        });
+    </script>
+</body>
+</html>
