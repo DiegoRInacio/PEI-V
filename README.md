@@ -80,3 +80,25 @@ Desenvolver e validar um **MVP (Produto Mínimo Viável)** relacionado ao projet
 - **Clareza e objetividade na apresentação final**.  
 
 ---
+
+## 🧮 Memória de Cálculo da Nota (P1)
+
+A nota da P1 (0 a 10) é composta por três exercícios:
+
+| Componente | O que é | Pontuação máxima |
+|---|---|---:|
+| **Ex1** | Exercício 1 | 1 ponto |
+| **Ex2** | Exercício 2 | 1 ponto |
+| **Ex3** | Desenvolvimento do MVP + Apresentação (repositório de código e defesa oral) | 7 pontos |
+
+**Fórmula:**
+
+```
+P1 = ((Ex1 + Ex2) / 2) × 3 + Ex3
+```
+
+Com nota máxima em tudo: `((1+1)/2)×3 + 7 = 3 + 7 = 10`.
+
+A pontuação é **individual**: a entrega pertence ao grupo, mas a nota de cada aluno considera sua participação comprovada no projeto (commits, Pull Requests, revisões e demais evidências rastreáveis no repositório), não apenas o resultado entregue pelo grupo como um todo.
+
+---

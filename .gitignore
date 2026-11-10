@@ -3,4 +3,9 @@ CRITERIOS_AVALIACAO_ENTREGAS.md
 HISTORICO_REMOVIDO.md
 
 # Entregas compactadas
+Entregas/
 *.zip
+
+# Segredos/tokens locais
+.env
+*.xlsx
